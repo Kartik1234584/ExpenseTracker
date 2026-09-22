@@ -2,7 +2,7 @@ trigger:
   - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Default
 
 stages:
 
@@ -19,15 +19,24 @@ stages:
     steps:
     - checkout: self
 
-    - script: |
-        echo "Checking Expense Tracker files..."
+    - powershell: |
+        Write-Host "Checking Expense Tracker files..."
 
-        test -f index.html
-        test -f css/style.css
-        test -f js/app.js
-        test -f js/storage.js
+        $files = @(
+          "index.html",
+          "css/style.css",
+          "js/app.js",
+          "js/storage.js"
+        )
 
-        echo "All required files are present."
+        foreach ($file in $files) {
+          if (-not (Test-Path $file)) {
+            Write-Error "Missing required file: $file"
+            exit 1
+          }
+        }
+
+        Write-Host "All required files are present."
       displayName: 'Validate Expense Tracker'
 
 
@@ -48,7 +57,8 @@ stages:
     steps:
     - checkout: self
 
-    - script: |
-        echo "Deployment stage reached."
-        echo "Azure deployment will be configured next."
+    - powershell: |
+        Write-Host "CI passed successfully."
+        Write-Host "Deployment stage reached."
+        Write-Host "Azure deployment will be configured next."
       displayName: 'Prepare Deployment'
