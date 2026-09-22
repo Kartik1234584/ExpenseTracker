@@ -41,13 +41,12 @@ stages:
 
 
 # =========================
-# CD - Deploy
+# CD - Deploy to Azure
 # =========================
 - stage: CD
   displayName: 'CD - Deploy to Azure'
 
   dependsOn: CI
-
   condition: succeeded()
 
   jobs:
@@ -57,8 +56,20 @@ stages:
     steps:
     - checkout: self
 
-    - powershell: |
-        Write-Host "CI passed successfully."
-        Write-Host "Deployment stage reached."
-        Write-Host "Azure deployment will be configured next."
-      displayName: 'Prepare Deployment'
+    - task: AzureCLI@2
+      displayName: 'Deploy Expense Tracker to Azure Storage'
+      inputs:
+        azureSubscription: 'ExpenseTracker-Azure'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          Write-Host "Deploying Expense Tracker to Azure Storage..."
+
+          az storage blob upload-batch `
+            --account-name expensetracker2026cicd `
+            --destination '$web' `
+            --source "$(Build.SourcesDirectory)" `
+            --auth-mode login `
+            --overwrite
+
+          Write-Host "Deployment completed successfully!"
