@@ -1,0 +1,54 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+# =========================
+# CI - Validate
+# =========================
+- stage: CI
+  displayName: 'CI - Validate Expense Tracker'
+
+  jobs:
+  - job: Validate
+    displayName: 'Validate Files'
+
+    steps:
+    - checkout: self
+
+    - script: |
+        echo "Checking Expense Tracker files..."
+
+        test -f index.html
+        test -f css/style.css
+        test -f js/app.js
+        test -f js/storage.js
+
+        echo "All required files are present."
+      displayName: 'Validate Expense Tracker'
+
+
+# =========================
+# CD - Deploy
+# =========================
+- stage: CD
+  displayName: 'CD - Deploy to Azure'
+
+  dependsOn: CI
+
+  condition: succeeded()
+
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy to Azure Storage'
+
+    steps:
+    - checkout: self
+
+    - script: |
+        echo "Deployment stage reached."
+        echo "Azure deployment will be configured next."
+      displayName: 'Prepare Deployment'
